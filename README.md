@@ -1,1 +1,1 @@
-# panlex_API
+# panlex_python_API
