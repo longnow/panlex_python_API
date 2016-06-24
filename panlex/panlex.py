@@ -2,9 +2,14 @@ import json
 import requests as rq
 from ratelimit import *
 
+PANLEX_API_URL = "http://api.panlex.org/"
+
 @rate_limited(2) #2 calls/sec
-def query(url, objects):
-    """Generic query function. Takes args: url (PanLex API URL) args objects (a list in {} of object keys of format <>:<> """
+def query(ep, params):
+    """Generic query function.
+    ep: an endpoint of the PanLex API.
+    params: dict of parameters to pass in the HTTP request."""
+    url = PANLEX_API_URL + ep
     r = rq.post(url, data=json.dumps(objects))
     if r.status_code != rq.codes.ok:
         r.raise_for_status()
@@ -19,7 +24,7 @@ def extractResult(json, field):
 def translate(expn, startLang, endLang):
     """Get the best-quality translation of expn, an expression in startLang, into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
-    url = "http://api.panlex.org/ex"
+    url = PANLEX_API_URL + "ex"
     ps = {"uid":startLang,
           "tt":expn,
           "indent":True}
