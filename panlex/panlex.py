@@ -38,8 +38,24 @@ def translate(expn, startLang, endLang):
     r2 = query("ex",params2)
     return extractResult(r2.json(),"tt")
 
+@rate_limited(2) #2 calls/sec
+def exCount(entry):
+    """Count numbers of expressions.
+    entry: the expression string you want to count"""
+    params = {"tt":entry}
+    r = query("ex/count", params)
+    return r.json()['count']
+
+"""TODO: 
+   more functions for different kinds of counting
+   generic count() function
+   function for displaying "Which languages have the word x?"
+   function "How do you say x in different languages?"
+"""
+
 def main():
     print(translate("tree","eng-000","cmn-000"))
 
 if __name__ == "__main__":
     main()
+
