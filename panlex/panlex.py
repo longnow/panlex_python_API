@@ -24,25 +24,19 @@ def extractResult(json, field):
 def translate(expn, startLang, endLang):
     """Get the best-quality translation of expn, an expression in startLang, into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
-    url = PANLEX_API_URL + "ex"
-    ps = {"uid":startLang,
-          "tt":expn,
-          "indent":True}
-    r1 = rq.post(url, data=json.dumps(ps))
-    if r1.status_code != rq.codes.ok:
-        r1.raise_for_status()
-    else:
-        exid = extractResult(r1.json(),"ex")
-        r2 = rq.post(url, json.dumps({"trex":exid,
-                                      "uid":endLang,
-                                      "indent":True,
-                                      "include":"trq",
-                                      "sort":"trq desc",
-                                      "limit":1}))
-        if r2.status_code != rq.codes.ok:
-            r2.raise_for_status()
-        else:
-            return extractResult(r2.json(),"tt")
+    params1 = {"uid":startLang,
+               "tt":expn,
+               "indent":True}
+    r1 = query("ex",params1)
+    exid = extractResult(r1.json(),"ex")
+    params2 = {"trex":exid,
+               "uid":endLang,
+               "indent":True,
+               "include":"trq",
+               "sort":"trq desc",
+               "limit":1}
+    r2 = query("ex",params2)
+    return extractResult(r2.json(),"tt")
 
 def main():
     print(translate("tree","eng-000","cmn-000"))
