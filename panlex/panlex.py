@@ -2,11 +2,6 @@ import json
 import requests as rq
 from ratelimit import *
 
-url = "http://api.panlex.org/ex"
-extras = {"uid":"eng-000",
-          "tt":"tree",
-          "indent":True}
-
 def extractResult(json, field):
     """Get into the results of a JSON response from the PanLex API."""
     return json["result"][0][field]
@@ -18,7 +13,7 @@ def translateFromEnglishToMandarin(targetWord):
     ps = {"uid":"eng-000",
           "tt":targetWord,
           "indent":True}
-    r1 = rq.post(url, data=json.dumps(extras))
+    r1 = rq.post(url, data=json.dumps(ps))
     if r1.status_code != rq.codes.ok:
         r1.raise_for_status()
     else:
