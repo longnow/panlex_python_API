@@ -23,15 +23,14 @@ def extractResult(json, field):
     return json["result"][0][field]
 
 def queryAll(ep, params):
+    params = dict.copy(params) # to avoid overwriting elements of caller's params dictionary
     """Generic query function for requests with more than 2000 reults
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
-    print("1",params)
     if "offset" not in params:
         params["offset"] = 0
     while 1:
-        print(params)
         r = query(ep, params)
         if not retVal:
             retVal = r
