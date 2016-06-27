@@ -29,11 +29,9 @@ def queryAll(ep, params):
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
-    print("1",params)
     if "offset" not in params:
         params["offset"] = 0
     while 1:
-        print(params)
         r = query(ep, params)
         if not retVal:
             retVal = r
