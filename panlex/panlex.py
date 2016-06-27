@@ -2,7 +2,7 @@ import json
 import requests as rq
 from ratelimit import *
 
-PANLEX_API_URL = "http://api.panlex.org/"
+PANLEX_API_URL = "http://api.panlex.org"
 
 @rate_limited(2) #2 calls/sec
 def query(ep, params):
