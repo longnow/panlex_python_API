@@ -1,8 +1,10 @@
 import json
 import requests as rq
 from ratelimit import *
+import copy
 
 PANLEX_API_URL = "http://api.panlex.org"
+MAX_ARRAY_SIZE = 10000
 
 @rate_limited(2) #2 calls/sec
 def query(ep, params):
@@ -43,6 +45,27 @@ def queryAll(ep, params):
         params["offset"] += r["resultNum"]
     return retVal
     
+def queryNorm(ep, params):
+    """
+    ep: either "/norm/ex/<lv>" or "/norm/df/<lv>"
+    params: dict of paramaters to pass in HTTP request, including an array to normalize"""
+    retVal = None
+    params = copy.copy(params) # to avoid overwriting elements of caller's params dict
+    params["cache"] = 0
+    start = 0
+    end = MAX_ARRAY_SIZE
+    while 1:
+        r = query(ep, params["tt"][start:end])
+        if not retVal:
+            retVal = r
+        else:
+            retVal.update(r)
+        if len(r["norm"]) < MAX_ARRAY_SIZE:
+            break
+        start += MAX_ARRAY_SIZE
+        end += MAX_ARRAY_SIZE
+    return retVal
+
 def translate(expn, startLang, endLang):
     """Get the best-quality translation of expn, an expression in startLang, into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
