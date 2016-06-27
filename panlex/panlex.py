@@ -25,14 +25,15 @@ def extractResult(json, field):
     return json["result"][0][field]
 
 def queryAll(ep, params):
-    params = dict.copy(params) # to avoid overwriting elements of caller's params dictionary
     """Generic query function for requests with more than 2000 reults
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
+    print("1",params)
     if "offset" not in params:
         params["offset"] = 0
     while 1:
+        print(params)
         r = query(ep, params)
         if not retVal:
             retVal = r
@@ -48,18 +49,21 @@ def queryAll(ep, params):
 def queryNorm(ep, params):
     """
     ep: either "/norm/ex/<lv>" or "/norm/df/<lv>"
-    params: dict of paramaters to pass in HTTP request, including an array to normalize"""
+    params: dict of paramaters to pass in HTTP request, including an array oto normalize"""
     retVal = None
     params = copy.copy(params) # to avoid overwriting elements of caller's params dict
     params["cache"] = 0
     start = 0
     end = MAX_ARRAY_SIZE
     while 1:
-        r = query(ep, params["tt"][start:end])
+        p = params["tt"][start:end]
+        temp = copy.copy(params)
+        temp["tt"] = p
+        r = query(ep, temp)
         if not retVal:
             retVal = r
         else:
-            retVal.update(r)
+            retVal["norm"].update(r["norm"])
         if len(r["norm"]) < MAX_ARRAY_SIZE:
             break
         start += MAX_ARRAY_SIZE
