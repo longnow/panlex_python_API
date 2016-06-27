@@ -46,6 +46,7 @@ def queryAll(ep, params):
     
 def queryNorm(ep, params):
     """
+    Generic query function for normalization queries, able to handle >10,000 element arrays.
     ep: either "/norm/ex/<lv>" or "/norm/df/<lv>"
     params: dict of paramaters to pass in HTTP request, including an array oto normalize"""
     retVal = None
