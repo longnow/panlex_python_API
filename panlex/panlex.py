@@ -32,15 +32,15 @@ def flatten(queries):
         retVal["resultNum"] += q["resultNum"]
         # get each thing out of the dict in q's result field,
         # and copy it into retVal's result field
-        for x in q["result"]:
-            retVal["result"].append(x)
+        retVal["result"].extend(q["result"])
     return retVal
 
-@rate_limited(2)
 def queryAllHelper(ep, params, offset=0):
     """Get all results of a query, and not just the maximum amount of results per query."""
     retVal = []
+    print("1",params)
     params["offset"] = offset
+    print("2",params)
     r = query(ep, params)
     resultNum = r["resultNum"]
     retVal.append(r)
@@ -49,12 +49,30 @@ def queryAllHelper(ep, params, offset=0):
         pass
     else:
         # there may be more results
+        print("debug original offset",offset)
         offset = offset + resultNum
+        print("debug changed offset",offset)
         retVal.extend(queryAllHelper(ep, params, offset))
     return retVal
 
 def queryAll(ep, params):
-    return flatten(queryAllHelper(ep, params))
+    retVal = None
+    print("1",params)
+    if "offset" not in params:
+        params["offset"] = 0
+    while 1:
+        print(params)
+        r = query(ep, params)
+        if not retVal:
+            retVal = r
+        else:
+            retVal["result"].extend(r["result"]) 
+            retVal["resultNum"] += r["resultNum"]
+            if r["resultNum"] < r["resultMax"]:
+                # there won't be any more results
+                break
+        params["offset"] += r["resultNum"]
+    return retVal
     
 @rate_limited(2) #2 calls/sec
 def translate(expn, startLang, endLang):
