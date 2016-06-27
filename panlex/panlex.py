@@ -7,7 +7,7 @@ PANLEX_API_URL = "http://api.panlex.org"
 @rate_limited(2) #2 calls/sec
 def query(ep, params):
     """Generic query function.
-    ep: an endpoint of the PanLex API.
+    ep: an endpoint of the PanLex API (e.g. "/ex")
     params: dict of parameters to pass in the HTTP request."""
     url = PANLEX_API_URL + ep
     r = rq.post(url, data=json.dumps(params))
@@ -23,6 +23,9 @@ def extractResult(json, field):
     return json["result"][0][field]
 
 def queryAll(ep, params):
+    """Generic query function for requests with more than 2000 reults
+    ep: an endpoint of the PanLex API (e.g. "/lv")
+    params: dict of parameters to pass in the HTTP request."""
     retVal = None
     print("1",params)
     if "offset" not in params:
