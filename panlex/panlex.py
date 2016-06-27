@@ -20,6 +20,7 @@ def extractResult(json, field):
     """Get into the results of a JSON response from the PanLex API."""
     return json["result"][0][field]
 
+
 @rate_limited(2) #2 calls/sec
 def translate(expn, startLang, endLang):
     """Get the best-quality translation of expn, an expression in startLang, into endLang.
@@ -37,21 +38,6 @@ def translate(expn, startLang, endLang):
                "limit":1}
     r2 = query("ex",params2)
     return extractResult(r2.json(),"tt")
-
-@rate_limited(2) #2 calls/sec
-def exCount(entry):
-    """Count numbers of expressions.
-    entry: the expression string you want to count"""
-    params = {"tt":entry}
-    r = query("ex/count", params)
-    return r.json()['count']
-
-"""TODO: 
-   more functions for different kinds of counting
-   generic count() function
-   function for displaying "Which languages have the word x?"
-   function "How do you say x in different languages?"
-"""
 
 def main():
     print(translate("tree","eng-000","cmn-000"))
