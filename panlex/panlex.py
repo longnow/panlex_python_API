@@ -44,7 +44,6 @@ def queryAll(ep, params):
         params["offset"] += r["resultNum"]
     return retVal
     
-@rate_limited(2) #2 calls/sec
 def translate(expn, startLang, endLang):
     """Get the best-quality translation of expn, an expression in startLang, into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
@@ -61,10 +60,3 @@ def translate(expn, startLang, endLang):
                "limit":1}
     r2 = query("ex",params2)
     return extractResult(r2,"tt")
-
-def main():
-    print(translate("tree","eng-000","cmn-000"))
-
-if __name__ == "__main__":
-    main()
-
