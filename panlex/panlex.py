@@ -14,7 +14,7 @@ def query(ep, params):
     if r.status_code != rq.codes.ok:
         r.raise_for_status()
     else:
-        return r
+        return r.json()
 
 def extractResult(json, field):
     """Get the results of a JSON response from the PanLex API.
@@ -24,16 +24,15 @@ def extractResult(json, field):
 
 def flatten(queries):
     # give it the same fields as any element in queries...
-    retVal = queries[0].json()
+    retVal = queries[0]
     # ... but zero out the resultNum and result fields
     retVal["resultNum"] = 0
     retVal["result"] = []
     for q in queries:
-        qdata = q.json()
-        retVal["resultNum"] += qdata["resultNum"]
+        retVal["resultNum"] += q["resultNum"]
         # get each thing out of the dict in q's result field,
         # and copy it into retVal's result field
-        for x in qdata["result"]:
+        for x in q["result"]:
             retVal["result"].append(x)
     return retVal
 
@@ -43,10 +42,9 @@ def queryAllHelper(ep, params, offset=0):
     retVal = []
     params["offset"] = offset
     r = query(ep, params)
-    jsonVersion = r.json()
-    resultNum = jsonVersion["resultNum"]
+    resultNum = r["resultNum"]
     retVal.append(r)
-    if resultNum < jsonVersion["resultMax"]:
+    if resultNum < r["resultMax"]:
         # there won't be any more results
         pass
     else:
@@ -66,7 +64,7 @@ def translate(expn, startLang, endLang):
                "tt":expn,
                "indent":True}
     r1 = query("ex",params1)
-    exid = extractResult(r1.json(),"ex")
+    exid = extractResult(r1,"ex")
     params2 = {"trex":exid,
                "uid":endLang,
                "indent":True,
@@ -74,7 +72,7 @@ def translate(expn, startLang, endLang):
                "sort":"trq desc",
                "limit":1}
     r2 = query("ex",params2)
-    return extractResult(r2.json(),"tt")
+    return extractResult(r2,"tt")
 
 def main():
     print(translate("tree","eng-000","cmn-000"))
