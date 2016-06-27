@@ -22,7 +22,42 @@ def extractResult(json, field):
     In particular, responses to hitting the /count endpoints don't have a 'result' field."""
     return json["result"][0][field]
 
+def flatten(queries):
+    # give it the same fields as any element in queries...
+    retVal = queries[0].json()
+    # ... but zero out the resultNum and result fields
+    retVal["resultNum"] = 0
+    retVal["result"] = []
+    for q in queries:
+        qdata = q.json()
+        retVal["resultNum"] += qdata["resultNum"]
+        # get each thing out of the dict in q's result field,
+        # and copy it into retVal's result field
+        for x in qdata["result"]:
+            retVal["result"].append(x)
+    return retVal
 
+@rate_limited(2)
+def queryAllHelper(ep, params, offset=0):
+    """Get all results of a query, and not just the maximum amount of results per query."""
+    retVal = []
+    params["offset"] = offset
+    r = query(ep, params)
+    jsonVersion = r.json()
+    resultNum = jsonVersion["resultNum"]
+    retVal.append(r)
+    if resultNum < jsonVersion["resultMax"]:
+        # there won't be any more results
+        pass
+    else:
+        # there may be more results
+        offset = offset + resultNum
+        retVal.extend(queryAllHelper(ep, params, offset))
+    return retVal
+
+def queryAll(ep, params):
+    return flatten(queryAllHelper(ep, params))
+    
 @rate_limited(2) #2 calls/sec
 def translate(expn, startLang, endLang):
     """Get the best-quality translation of expn, an expression in startLang, into endLang.
