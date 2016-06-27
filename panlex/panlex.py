@@ -17,7 +17,9 @@ def query(ep, params):
         return r
 
 def extractResult(json, field):
-    """Get into the results of a JSON response from the PanLex API."""
+    """Get the results of a JSON response from the PanLex API.
+    Most but not all responses use this format, so it's not quite foolproof.
+    In particular, responses to hitting the /count endpoints don't have a 'result' field."""
     return json["result"][0][field]
 
 
