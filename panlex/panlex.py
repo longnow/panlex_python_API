@@ -22,39 +22,6 @@ def extractResult(json, field):
     In particular, responses to hitting the /count endpoints don't have a 'result' field."""
     return json["result"][0][field]
 
-def flatten(queries):
-    # give it the same fields as any element in queries...
-    retVal = queries[0]
-    # ... but zero out the resultNum and result fields
-    retVal["resultNum"] = 0
-    retVal["result"] = []
-    for q in queries:
-        retVal["resultNum"] += q["resultNum"]
-        # get each thing out of the dict in q's result field,
-        # and copy it into retVal's result field
-        retVal["result"].extend(q["result"])
-    return retVal
-
-def queryAllHelper(ep, params, offset=0):
-    """Get all results of a query, and not just the maximum amount of results per query."""
-    retVal = []
-    print("1",params)
-    params["offset"] = offset
-    print("2",params)
-    r = query(ep, params)
-    resultNum = r["resultNum"]
-    retVal.append(r)
-    if resultNum < r["resultMax"]:
-        # there won't be any more results
-        pass
-    else:
-        # there may be more results
-        print("debug original offset",offset)
-        offset = offset + resultNum
-        print("debug changed offset",offset)
-        retVal.extend(queryAllHelper(ep, params, offset))
-    return retVal
-
 def queryAll(ep, params):
     retVal = None
     print("1",params)
