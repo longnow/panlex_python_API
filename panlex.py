@@ -1,8 +1,14 @@
+import os
+import re
 import json
 import requests as rq
 from ratelimit import *
 
-PANLEX_API_URL = "http://api.panlex.org"
+if "PANLEX_API" in os.environ:
+    PANLEX_API_URL = os.environ["PANLEX_API"]
+else:
+    PANLEX_API_URL = "http://api.panlex.org"
+
 MAX_ARRAY_SIZE = 10000
 
 @rate_limited(2) #2 calls/sec
@@ -10,7 +16,10 @@ def query(ep, params):
     """Generic query function.
     ep: an endpoint of the PanLex API (e.g. "/ex")
     params: dict of parameters to pass in the HTTP request."""
-    url = PANLEX_API_URL + ep
+    if re.search(r'^/', ep):
+        url = PANLEX_API_URL + ep
+    else:
+        url = ep
     r = rq.post(url, data=json.dumps(params))
     if r.status_code != rq.codes.ok:
         r.raise_for_status()
@@ -28,6 +37,7 @@ def queryAll(ep, params):
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
+    params = dict.copy(params) # to avoid overwriting elements of caller's params dict
     if "offset" not in params:
         params["offset"] = 0
     while 1:
@@ -51,21 +61,19 @@ def queryNorm(ep, params):
     retVal = None
     params = dict.copy(params) # to avoid overwriting elements of caller's params dict
     params["cache"] = 0
+    temp = dict.copy(params)
     start = 0
-    end = MAX_ARRAY_SIZE
     while 1:
-        p = params["tt"][start:end]
-        temp = dict.copy(params)
-        temp["tt"] = p
+        end = max(start + MAX_ARRAY_SIZE, len(params["tt"]))
+        temp["tt"] = params["tt"][start:end]
         r = query(ep, temp)
         if not retVal:
             retVal = r
         else:
             retVal["norm"].update(r["norm"])
-        if len(r["norm"]) < MAX_ARRAY_SIZE:
-            break
         start += MAX_ARRAY_SIZE
-        end += MAX_ARRAY_SIZE
+        if start > len(params["tt"]):
+            break
     return retVal
 
 def translate(expn, startLang, endLang):
