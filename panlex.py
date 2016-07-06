@@ -75,5 +75,5 @@ def queryNorm(ep, params):
 
 class PanLexError(Exception):
     def __init__(self, body):
-        self.code = body.code
-        self.message = body.message
+        self.code = body['code']
+        self.message = body['message']
