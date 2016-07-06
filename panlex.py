@@ -22,15 +22,12 @@ def query(ep, params):
         url = ep
     r = rq.post(url, data=json.dumps(params))
     if r.status_code != rq.codes.ok:
-        r.raise_for_status()
+        if r.status_code == 409:
+            raise PanLexError(r.json())
+        else:
+            r.raise_for_status()
     else:
         return r.json()
-
-def extractResult(json, field):
-    """Get the results of a JSON response from the PanLex API.
-    Most but not all responses use this format, so it's not quite foolproof.
-    In particular, responses to hitting the /count endpoints don't have a 'result' field."""
-    return json["result"][0][field]
 
 def queryAll(ep, params):
     """Generic query function for requests with more than 2000 reults
@@ -75,3 +72,8 @@ def queryNorm(ep, params):
         if start > len(params["tt"]):
             break
     return retVal
+
+class PanLexError(Exception):
+    def __init__(self, body):
+        self.code = body.code
+        self.message = body.message
