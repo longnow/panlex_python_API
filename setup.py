@@ -5,6 +5,7 @@ setup(
     version='1.0.0',
     author="Maxwell Joslyn; Caroline Glazer",
     author_email="info@panlex.org",
+    py_modules=["panlex"],
     url="https://github.com/longnow/panlex_python_API",
     description='Python wrapper for PanLex API',
     install_requires=['ratelimit','requests'],
