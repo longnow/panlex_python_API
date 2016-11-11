@@ -11,7 +11,7 @@ else:
 
 MAX_ARRAY_SIZE = 10000
 
-@rate_limited(2) #2 calls/sec
+@rate_limited(2)  # 2 calls/sec
 def query(ep, params):
     """Generic query function.
     ep: an endpoint of the PanLex API (e.g. "/ex")
@@ -29,15 +29,15 @@ def query(ep, params):
     else:
         return r.json()
 
-def queryAll(ep, params):
+def query_all(ep, params):
     """Generic query function for requests with more than 2000 reults
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
-    params = dict.copy(params) # to avoid overwriting elements of caller's params dict
+    params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
     if "offset" not in params:
         params["offset"] = 0
-    while 1:
+    while True:
         r = query(ep, params)
         if not retVal:
             retVal = r
@@ -49,18 +49,21 @@ def queryAll(ep, params):
                 break
         params["offset"] += r["resultNum"]
     return retVal
-    
-def queryNorm(ep, params):
+
+def queryAll(ep, params):
+    return query_all(ep, params)
+
+def query_norm(ep, params):
     """
     Generic query function for normalization queries, able to handle >10,000 element arrays.
     ep: either "/norm/ex/<lv>" or "/norm/df/<lv>"
-    params: dict of paramaters to pass in HTTP request, including an array oto normalize"""
+    params: dict of paramaters to pass in HTTP request, including an array to normalize"""
     retVal = None
     params = dict.copy(params) # to avoid overwriting elements of caller's params dict
     params["cache"] = 0
     temp = dict.copy(params)
     start = 0
-    while 1:
+    while True:
         end = max(start + MAX_ARRAY_SIZE, len(params["tt"]))
         temp["tt"] = params["tt"][start:end]
         r = query(ep, temp)
@@ -72,6 +75,9 @@ def queryNorm(ep, params):
         if start > len(params["tt"]):
             break
     return retVal
+
+def queryNorm(ep, params):
+    return query_norm(ep, params)
 
 class PanLexError(Exception):
     def __init__(self, body):
