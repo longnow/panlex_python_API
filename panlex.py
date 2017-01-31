@@ -29,7 +29,7 @@ def query(ep, params):
     else:
         return r.json()
 
-def query_all(ep, params):
+def query_all(ep, params={}):
     """Generic query function for requests with more than 2000 reults
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
@@ -37,6 +37,7 @@ def query_all(ep, params):
     params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
     if "offset" not in params:
         params["offset"] = 0
+    
     while True:
         r = query(ep, params)
         if not retVal:
@@ -49,6 +50,26 @@ def query_all(ep, params):
                 break
         params["offset"] += r["resultNum"]
     return retVal
+
+
+def query_iter(ep, params={}):
+    """Generic query function that creates an iterator for requests with more than 2000 reults
+    ep: an endpoint of the PanLex API (e.g. "/lv")
+    params: dict of parameters to pass in the HTTP request."""
+    params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
+    
+    if "offset" not in params:
+        params["offset"] = 0
+    
+    while True:
+        result = query(ep, params)
+        for record in result["result"]:
+            yield record
+        if result["resultNum"] < result["resultMax"]:
+            break
+
+        params["offset"] += result["resultNum"]
+
 
 def queryAll(ep, params):
     return query_all(ep, params)
@@ -95,11 +116,9 @@ def get_translations(expn, startLang, endLang, distance=1):
     exid = r1["result"][0]["ex"]
     params2 = {"trex":exid,
                "uid":endLang,
-               "indent":True,
                "include":"trq", # include the field trq, "translation quality"
                "trdistance":distance,
-               "sort":"trq desc", # sort by descending trq
-               "limit":1} # get only one result (which will be the one with the highest score)}
+               "sort":"trq desc"}
     r2 = query("/ex",params2)
     
     return r2["result"]
