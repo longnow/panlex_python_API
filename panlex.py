@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
 import os
 import re
 import json
@@ -107,14 +109,14 @@ class PanLexError(Exception):
 
 
 def get_translations(expn, startLang, endLang, distance=1):
-    """Get all translations of expn, an expression in startLang, into endLang.
+    """Get all translations of expn, the test of an expression in startLang,
+    into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
     params1 = {"uid":startLang,
                "tt":expn}
     r1 = query_all("/ex",params1)
     if not r1["result"]:
-        # expn is not a valid exp in startLang
-        return []
+        raise PanLexError("{}: not a valid exp in {}".format(expn, startLang))
     exid = r1["result"][0]["ex"]
     params2 = {"trex":exid,
                "uid":endLang,
