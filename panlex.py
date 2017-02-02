@@ -116,7 +116,7 @@ def get_translations(expn, startLang, endLang, distance=1):
                "tt":expn}
     r1 = query_all("/ex",params1)
     if not r1["result"]:
-        raise PanLexError("{}: not a valid exp in {}".format(expn, startLang))
+        raise PanLexError({"code":0,"message":"{}: not a valid exp in {}".format(expn, startLang)})
     exid = r1["result"][0]["ex"]
     params2 = {"trex":exid,
                "uid":endLang,
