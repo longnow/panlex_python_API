@@ -30,7 +30,7 @@ def query(ep, params):
         return r.json()
 
 def query_all(ep, params={}):
-    """Generic query function for requests with more than 2000 reults
+    """Generic query function for requests with more than 2000 results
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
@@ -53,7 +53,7 @@ def query_all(ep, params={}):
 
 
 def query_iter(ep, params={}):
-    """Generic query function that creates an iterator for requests with more than 2000 reults
+    """Generic query function that creates an iterator for requests with more than 2000 results
     ep: an endpoint of the PanLex API (e.g. "/lv")
     params: dict of parameters to pass in the HTTP request."""
     params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
@@ -110,15 +110,17 @@ def get_translations(expn, startLang, endLang, distance=1):
     """Get all translations of expn, an expression in startLang, into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
     params1 = {"uid":startLang,
-               "tt":expn,
-               "indent":True}
-    r1 = query("/ex",params1)
+               "tt":expn}
+    r1 = query_all("/ex",params1)
+    if not r1["result"]:
+        # expn is not a valid exp in startLang
+        return []
     exid = r1["result"][0]["ex"]
     params2 = {"trex":exid,
                "uid":endLang,
                "include":"trq", # include the field trq, "translation quality"
                "trdistance":distance,
                "sort":"trq desc"}
-    r2 = query("/ex",params2)
+    r2 = query_all("/ex",params2)
     
     return r2["result"]
