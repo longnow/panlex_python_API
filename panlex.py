@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 import os
-import re
 import json
 import requests as rq
 from ratelimit import *
@@ -18,7 +17,7 @@ def query(ep, params):
     """Generic query function.
     ep: an endpoint of the PanLex API (e.g. "/ex")
     params: dict of parameters to pass in the HTTP request."""
-    if re.search(r'^/', ep):
+    if ep.startswith('/'):
         url = PANLEX_API_URL + ep
     else:
         url = ep
