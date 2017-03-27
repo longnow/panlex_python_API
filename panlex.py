@@ -113,7 +113,6 @@ class PanLexError(Exception):
         self.code = body['code']
         self.message = body['message']
 
-
 def get_translations(expn, startLang, endLang, distance=1):
     """Get all translations of expn, the test of an expression in startLang,
     into endLang.
@@ -123,7 +122,7 @@ def get_translations(expn, startLang, endLang, distance=1):
     r1 = query_all("/expr",params1)
     if not r1["result"]:
         raise PanLexError({"code":0,"message":"{}: not a valid exp in {}".format(expn, startLang)})
-    exid = r1["result"][0]["expr"]
+    exid = r1["result"][0]["id"]
     params2 = {"trans_expr":exid,
                "uid":endLang,
                "include":"trans_quality", # include the field trq, "translation quality"
