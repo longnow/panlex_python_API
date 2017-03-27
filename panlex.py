@@ -5,17 +5,24 @@ import json
 import requests as rq
 from ratelimit import *
 
+VERSION = 2
+
+def set_version(version):
+    version_dict = {1: '', 2: '/v2'}
+    global PANLEX_API_URL
+    PANLEX_API_URL = "http://api.panlex.org" + version_dict[version]
+
+set_version(VERSION)
+
 if "PANLEX_API" in os.environ:
     PANLEX_API_URL = os.environ["PANLEX_API"]
-else:
-    PANLEX_API_URL = "http://api.panlex.org"
 
 MAX_ARRAY_SIZE = 10000
 
 @rate_limited(2)  # 2 calls/sec
 def query(ep, params):
     """Generic query function.
-    ep: an endpoint of the PanLex API (e.g. "/ex")
+    ep: an endpoint of the PanLex API (e.g. "/expr")
     params: dict of parameters to pass in the HTTP request."""
     if ep.startswith('/'):
         url = PANLEX_API_URL + ep
@@ -32,7 +39,7 @@ def query(ep, params):
 
 def query_all(ep, params={}):
     """Generic query function for requests with more than 2000 results
-    ep: an endpoint of the PanLex API (e.g. "/lv")
+    ep: an endpoint of the PanLex API (e.g. "/langvar")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
     params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
@@ -55,7 +62,7 @@ def query_all(ep, params={}):
 
 def query_iter(ep, params={}):
     """Generic query function that creates an iterator for requests with more than 2000 results
-    ep: an endpoint of the PanLex API (e.g. "/lv")
+    ep: an endpoint of the PanLex API (e.g. "/langvar")
     params: dict of parameters to pass in the HTTP request."""
     params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
     
@@ -78,7 +85,7 @@ def queryAll(ep, params):
 def query_norm(ep, params):
     """
     Generic query function for normalization queries, able to handle >10,000 element arrays.
-    ep: either "/norm/ex/<lv>" or "/norm/df/<lv>"
+    ep: either "/norm/expr/<langvar>" or "/norm/definition/<langvar>"
     params: dict of paramaters to pass in HTTP request, including an array to normalize"""
     retVal = None
     params = dict.copy(params) # to avoid overwriting elements of caller's params dict
@@ -86,15 +93,15 @@ def query_norm(ep, params):
     temp = dict.copy(params)
     start = 0
     while True:
-        end = max(start + MAX_ARRAY_SIZE, len(params["tt"]))
-        temp["tt"] = params["tt"][start:end]
+        end = max(start + MAX_ARRAY_SIZE, len(params["txt"]))
+        temp["txt"] = params["txt"][start:end]
         r = query(ep, temp)
         if not retVal:
             retVal = r
         else:
             retVal["norm"].update(r["norm"])
         start += MAX_ARRAY_SIZE
-        if start > len(params["tt"]):
+        if start > len(params["txt"]):
             break
     return retVal
 
@@ -112,16 +119,16 @@ def get_translations(expn, startLang, endLang, distance=1):
     into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
     params1 = {"uid":startLang,
-               "tt":expn}
-    r1 = query_all("/ex",params1)
+               "txt":expn}
+    r1 = query_all("/expr",params1)
     if not r1["result"]:
         raise PanLexError({"code":0,"message":"{}: not a valid exp in {}".format(expn, startLang)})
-    exid = r1["result"][0]["ex"]
-    params2 = {"trex":exid,
+    exid = r1["result"][0]["expr"]
+    params2 = {"trans_expr":exid,
                "uid":endLang,
-               "include":"trq", # include the field trq, "translation quality"
-               "trdistance":distance,
-               "sort":"trq desc"}
-    r2 = query_all("/ex",params2)
+               "include":"trans_quality", # include the field trq, "translation quality"
+               "trans_distance":distance,
+               "sort":"trans_quality desc"}
+    r2 = query_all("/expr",params2)
     
     return r2["result"]
