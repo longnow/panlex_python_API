@@ -38,14 +38,14 @@ def query(ep, params):
         return r.json()
 
 def query_all(ep, params={}):
-    """Generic query function for requests with more than 2000 results
+    """Generic query function for requests with more than the maximum results
+    per API query (2000 at time of writing).
     ep: an endpoint of the PanLex API (e.g. "/langvar")
     params: dict of parameters to pass in the HTTP request."""
     retVal = None
     params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
     if "offset" not in params:
         params["offset"] = 0
-    
     while True:
         r = query(ep, params)
         if not retVal:
@@ -57,11 +57,17 @@ def query_all(ep, params={}):
                 # there won't be any more results
                 break
         params["offset"] += r["resultNum"]
+        if "limit" in params:
+            params["limit"] -= r["resultNum"]
+            if params["limit"] <= 0:
+                # limit was hit
+                break
     return retVal
 
 
 def query_iter(ep, params={}):
-    """Generic query function that creates an iterator for requests with more than 2000 results
+    """Generic query function that creates an iterator for requests with more
+    than the maximum results per API query (2000 at time of writing).
     ep: an endpoint of the PanLex API (e.g. "/langvar")
     params: dict of parameters to pass in the HTTP request."""
     params = dict.copy(params)  # to avoid overwriting elements of caller's params dict
@@ -77,7 +83,10 @@ def query_iter(ep, params={}):
             break
 
         params["offset"] += result["resultNum"]
-
+        if "limit" in params:
+            params["limit"] -= result["resultNum"]
+            if params["limit"] <= 0:
+                break
 
 def queryAll(ep, params):
     return query_all(ep, params)
@@ -113,7 +122,7 @@ class PanLexError(Exception):
         self.code = body['code']
         self.message = body['message']
 
-def get_translations(expn, startLang, endLang, distance=1):
+def get_translations(expn, startLang, endLang, distance=1, limit=None):
     """Get all translations of expn, the test of an expression in startLang,
     into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
@@ -128,6 +137,8 @@ def get_translations(expn, startLang, endLang, distance=1):
                "include":"trans_quality", # include the field trq, "translation quality"
                "trans_distance":distance,
                "sort":"trans_quality desc"}
+    if limit:
+        params2["limit"] = limit
     r2 = query_all("/expr",params2)
     
     return r2["result"]
