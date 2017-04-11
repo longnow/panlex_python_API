@@ -7,7 +7,7 @@ from ratelimit import *
 
 VERSION = 2
 
-def set_version(version):
+def set_version(version:int):
     version_dict = {1: '', 2: '/v2'}
     global PANLEX_API_URL
     PANLEX_API_URL = "http://api.panlex.org" + version_dict[version]
@@ -20,7 +20,7 @@ if "PANLEX_API" in os.environ:
 MAX_ARRAY_SIZE = 10000
 
 @rate_limited(2)  # 2 calls/sec
-def query(ep, params):
+def query(ep:str, params:dict):
     """Generic query function.
     ep: an endpoint of the PanLex API (e.g. "/expr")
     params: dict of parameters to pass in the HTTP request."""
@@ -37,7 +37,7 @@ def query(ep, params):
     else:
         return r.json()
 
-def query_all(ep, params={}):
+def query_all(ep:str, params={}):
     """Generic query function for requests with more than the maximum results
     per API query (2000 at time of writing).
     ep: an endpoint of the PanLex API (e.g. "/langvar")
@@ -65,7 +65,7 @@ def query_all(ep, params={}):
     return retVal
 
 
-def query_iter(ep, params={}):
+def query_iter(ep:str, params={}):
     """Generic query function that creates an iterator for requests with more
     than the maximum results per API query (2000 at time of writing).
     ep: an endpoint of the PanLex API (e.g. "/langvar")
@@ -91,7 +91,7 @@ def query_iter(ep, params={}):
 def queryAll(ep, params):
     return query_all(ep, params)
 
-def query_norm(ep, params):
+def query_norm(ep:str, params):
     """
     Generic query function for normalization queries, able to handle >10,000 element arrays.
     ep: either "/norm/expr/<langvar>" or "/norm/definition/<langvar>"
@@ -122,7 +122,7 @@ class PanLexError(Exception):
         self.code = body['code']
         self.message = body['message']
 
-def get_translations(expn, startLang, endLang, distance=1, limit=None):
+def get_translations(expn:str, startLang:str, endLang:str, distance=1, limit=None):
     """Get all translations of expn, the test of an expression in startLang,
     into endLang.
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
