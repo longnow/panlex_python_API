@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 import os
 import json
+from urllib.parse import urljoin
 import requests as rq
 from ratelimit import *
 
@@ -10,7 +11,7 @@ VERSION = 2
 def set_version(version:int):
     version_dict = {1: '', 2: '/v2'}
     global PANLEX_API_URL
-    PANLEX_API_URL = "http://api.panlex.org" + version_dict[version]
+    PANLEX_API_URL = urljoin("http://api.panlex.org", version_dict[version])
 
 set_version(VERSION)
 
@@ -25,7 +26,7 @@ def query(ep:str, params:dict):
     ep: an endpoint of the PanLex API (e.g. "/expr")
     params: dict of parameters to pass in the HTTP request."""
     if ep.startswith('/'):
-        url = PANLEX_API_URL + ep
+        url = urljoin(PANLEX_API_URL, ep)
     else:
         url = ep
     r = rq.post(url, data=json.dumps(params))
