@@ -24,10 +24,12 @@ def query(ep:str, params:dict):
     """Generic query function.
     ep: an endpoint of the PanLex API (e.g. "/expr")
     params: dict of parameters to pass in the HTTP request."""
+    
     if ep.startswith('/'):
         url = PANLEX_API_URL + ep
     else:
         url = ep
+    
     r = rq.post(url, data=json.dumps(params))
     if r.status_code != rq.codes.ok:
         if r.status_code == 409:
