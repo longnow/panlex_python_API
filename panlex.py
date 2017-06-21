@@ -122,9 +122,10 @@ class PanLexError(Exception):
         self.code = body['code']
         self.message = body['message']
 
-def get_translations(expn:str, startLang:str, endLang:str, distance=1, limit=None):
-    """Get all translations of expn, the test of an expression in startLang,
-    into endLang.
+def get_translations(expn:str, startLang:str, endLang:str, distance=1, limit=0):
+    """Get all translations of expn from startLang into endLang. distance is
+    translation distance (1 or 2, default 1). limit is number of translations
+    returned (default, no limit).
     Languages are specified as PanLex UID codes (e.g. eng-000 for English.)"""
     params1 = {"uid":startLang,
                "txt":expn}
