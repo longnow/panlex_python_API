@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='panlex_API',
-    version='1.1.0',
+    version='1.2.0',
     author="Maxwell Joslyn; Caroline Glazer; Gary Krug; Alex DelPriore; Ben Yang",
     author_email="info@panlex.org",
     py_modules=["panlex"],
