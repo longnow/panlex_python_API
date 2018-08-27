@@ -19,7 +19,7 @@ if "PANLEX_API" in os.environ:
 
 MAX_ARRAY_SIZE = 10000
 
-@rate_limited(2)  # 2 calls/sec
+# @rate_limited(2)  # 2 calls/sec
 def query(ep:str, params:dict):
     """Generic query function.
     ep: an endpoint of the PanLex API (e.g. "/expr")
